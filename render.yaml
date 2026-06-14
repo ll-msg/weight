@@ -36,11 +36,11 @@ services:
       - key: CORS_ORIGINS
         fromService:
           name: loseweight-web
-          type: static
+          type: web
           property: url
 
   # ---------- 前端：Next.js 静态导出 ----------
-  - type: static 
+  - type: web
     name: loseweight-web
     env: static
     rootDir: frontend
