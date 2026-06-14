@@ -32,12 +32,10 @@ services:
       # 自动生成随机密钥用于 JWT 签名
       - key: SECRET_KEY
         generateValue: true
-      # 自动注入前端域名作为允许的跨域来源（config 会自动补 https://）
+      # 允许所有来源（鉴权走 Bearer Token、不依赖 Cookie，安全可接受）。
+      # 如需收紧，可改为前端的具体域名，例如 https://loseweight-web.onrender.com
       - key: CORS_ORIGINS
-        fromService:
-          name: loseweight-web
-          type: web
-          property: host
+        value: "*"
 
   # ---------- 前端：Next.js 静态导出 ----------
   - type: web
