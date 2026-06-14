@@ -51,7 +51,4 @@ services:
         value: 20.11.1
       # 自动注入后端域名（api.ts 会自动补 https://）
       - key: NEXT_PUBLIC_API_BASE
-        fromService:
-          name: loseweight-api
-          type: web
-          property: host
+        value: https://loseweight-api.onrender.com
