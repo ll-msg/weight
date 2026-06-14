@@ -10,9 +10,11 @@ import BottomNav from "@/components/BottomNav";
 import ReportCard from "@/components/ReportCard";
 import RequireAuth from "@/components/RequireAuth";
 import { api } from "@/lib/api";
+import { useI18n } from "@/lib/i18n";
 import type { CompetitionResult, Season } from "@/lib/types";
 
 function ReportInner() {
+  const { t } = useI18n();
   const params = useSearchParams();
   const seasonId = Number(params.get("season"));
 
@@ -45,12 +47,12 @@ function ReportInner() {
         backgroundColor: "#ffffff",
       });
       const link = document.createElement("a");
-      link.download = `战报-${season?.name ?? "season"}.png`;
+      link.download = `report-${season?.name ?? "season"}.png`;
       link.href = dataUrl;
       link.click();
-      setMsg("已生成图片，请在弹出的保存对话框中保存到相册 📸");
+      setMsg(t("report.saved"));
     } catch (err) {
-      setMsg(err instanceof Error ? `保存失败：${err.message}` : "保存失败");
+      setMsg(err instanceof Error ? `${t("report.saveFail")}: ${err.message}` : t("report.saveFail"));
     } finally {
       setSaving(false);
     }
@@ -59,7 +61,7 @@ function ReportInner() {
   if (!seasonId) {
     return (
       <div className="container">
-        <div className="center">请先从赛季列表选择当前赛季</div>
+        <div className="center">{t("dashboard.pickSeason")}</div>
         <BottomNav />
       </div>
     );
@@ -68,15 +70,13 @@ function ReportInner() {
   return (
     <div className="container">
       <h1 className="page-title" style={{ marginTop: 12 }}>
-        赛季战报
+        {t("report.title")}
       </h1>
 
-      {!result?.is_finished && (
-        <p className="subtitle mb">赛季尚未结束，以下为实时战况预览。</p>
-      )}
+      {!result?.is_finished && <p className="subtitle mb">{t("report.notFinished")}</p>}
 
       {loading ? (
-        <p className="muted">加载中…</p>
+        <p className="muted">{t("common.loading")}</p>
       ) : season && result ? (
         <>
           {/* 可导出的战报卡片 */}
@@ -85,14 +85,14 @@ function ReportInner() {
           {msg && <div className="success mt">{msg}</div>}
 
           <button className="btn btn-primary mt" onClick={onSave} disabled={saving}>
-            {saving ? "生成中…" : "保存战报到相册"}
+            {saving ? t("report.generating") : t("report.save")}
           </button>
           <p className="muted text-center" style={{ fontSize: 12, marginTop: 8 }}>
-            手机端可长按图片或在下载提示中「存储到相册」
+            {t("report.saveHint")}
           </p>
         </>
       ) : (
-        <p className="muted">暂无战报数据</p>
+        <p className="muted">{t("report.noData")}</p>
       )}
 
       <BottomNav />
@@ -103,7 +103,7 @@ function ReportInner() {
 export default function ReportPage() {
   return (
     <RequireAuth>
-      <Suspense fallback={<div className="center muted">加载中…</div>}>
+      <Suspense fallback={<div className="center muted">…</div>}>
         <ReportInner />
       </Suspense>
     </RequireAuth>

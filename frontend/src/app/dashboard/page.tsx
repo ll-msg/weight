@@ -10,8 +10,9 @@ import MealsEditor from "@/components/MealsEditor";
 import RequireAuth from "@/components/RequireAuth";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
+import { useI18n } from "@/lib/i18n";
 import type { Meal, Season } from "@/lib/types";
-import { bmi, bmiLabel, todayStr } from "@/lib/utils";
+import { bmi, bmiKey, todayStr } from "@/lib/utils";
 
 // 带像素图标的分区标题
 function SectionTitle({ icon, children }: { icon: string; children: React.ReactNode }) {
@@ -38,6 +39,7 @@ const emptyForm = {
 
 function DashboardInner() {
   const { user } = useAuth();
+  const { t } = useI18n();
   const params = useSearchParams();
   const seasonId = Number(params.get("season"));
 
@@ -105,9 +107,9 @@ function DashboardInner() {
         notes: form.notes || null,
         meals: form.meals.filter((m) => m.description.trim()),
       });
-      setMsg({ type: "ok", text: "已保存 ✅" });
+      setMsg({ type: "ok", text: t("dashboard.saved") });
     } catch (err) {
-      setMsg({ type: "err", text: err instanceof Error ? err.message : "保存失败" });
+      setMsg({ type: "err", text: err instanceof Error ? err.message : t("dashboard.saveFail") });
     } finally {
       setBusy(false);
     }
@@ -117,7 +119,7 @@ function DashboardInner() {
     return (
       <div className="container">
         <div className="center">
-          <div>请先从赛季列表选择当前赛季</div>
+          <div>{t("dashboard.pickSeason")}</div>
         </div>
         <BottomNav />
       </div>
@@ -133,10 +135,10 @@ function DashboardInner() {
       <div className="flex-between" style={{ marginTop: 12 }}>
         <div>
           <div className="muted" style={{ fontSize: 13 }}>
-            {season?.name ?? "赛季"}
+            {season?.name ?? t("dashboard.season")}
           </div>
           <h1 className="page-title" style={{ margin: 0 }}>
-            今日记录
+            {t("dashboard.todayLog")}
           </h1>
         </div>
       </div>
@@ -144,7 +146,7 @@ function DashboardInner() {
       {/* 日期选择 */}
       <div className="card">
         <div className="field" style={{ marginBottom: 0 }}>
-          <label>记录日期</label>
+          <label>{t("dashboard.recordDate")}</label>
           <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
         </div>
       </div>
@@ -152,12 +154,12 @@ function DashboardInner() {
       {msg && <div className={msg.type === "ok" ? "success" : "error"}>{msg.text}</div>}
 
       {loading ? (
-        <p className="muted">加载中…</p>
+        <p className="muted">{t("common.loading")}</p>
       ) : (
         <>
           {/* 体重 */}
           <div className="card">
-            <SectionTitle icon="weight">体重</SectionTitle>
+            <SectionTitle icon="weight">{t("dashboard.weight")}</SectionTitle>
             <div className="field" style={{ marginBottom: 8 }}>
               <input
                 type="number"
@@ -169,14 +171,16 @@ function DashboardInner() {
             </div>
             {curBmi && (
               <div className="muted" style={{ fontSize: 13 }}>
-                BMI {curBmi.toFixed(1)}（{bmiLabel(curBmi)}）
+                BMI {curBmi.toFixed(1)} ({t(`bmi.${bmiKey(curBmi)}`)})
               </div>
             )}
           </div>
 
           {/* 喝水 */}
           <div className="card">
-            <SectionTitle icon="water">喝水：{form.water_ml} ml</SectionTitle>
+            <SectionTitle icon="water">
+              {t("dashboard.water")}: {form.water_ml} ml
+            </SectionTitle>
             <div className="row">
               {[200, 250, 500].map((amt) => (
                 <button
@@ -189,17 +193,17 @@ function DashboardInner() {
                 </button>
               ))}
               <button type="button" className="btn btn-secondary btn-sm" onClick={() => set("water_ml", 0)}>
-                清零
+                {t("dashboard.clear")}
               </button>
             </div>
           </div>
 
           {/* 运动 */}
           <div className="card">
-            <SectionTitle icon="exercise">运动</SectionTitle>
+            <SectionTitle icon="exercise">{t("dashboard.exercise")}</SectionTitle>
             <div className="row">
               <div className="field">
-                <label>时长 (分钟)</label>
+                <label>{t("dashboard.exDuration")}</label>
                 <input
                   type="number"
                   value={form.exercise_minutes}
@@ -207,7 +211,7 @@ function DashboardInner() {
                 />
               </div>
               <div className="field">
-                <label>消耗 (千卡)</label>
+                <label>{t("dashboard.exKcal")}</label>
                 <input
                   type="number"
                   value={form.exercise_kcal}
@@ -216,7 +220,7 @@ function DashboardInner() {
               </div>
             </div>
             <div className="field" style={{ marginBottom: 0 }}>
-              <label>步数</label>
+              <label>{t("dashboard.steps")}</label>
               <input
                 type="number"
                 value={form.steps}
@@ -227,9 +231,9 @@ function DashboardInner() {
 
           {/* 睡眠 & 心情 */}
           <div className="card">
-            <SectionTitle icon="sleep">睡眠 &amp; 心情</SectionTitle>
+            <SectionTitle icon="sleep">{t("dashboard.sleepMood")}</SectionTitle>
             <div className="field">
-              <label>睡眠时长 (小时)</label>
+              <label>{t("dashboard.sleepHours")}</label>
               <input
                 type="number"
                 step="0.5"
@@ -238,46 +242,66 @@ function DashboardInner() {
               />
             </div>
             <div className="field" style={{ marginBottom: 0 }}>
-              <label>心情{form.mood ? `（${form.mood}/5）` : ""}</label>
-              <div style={{ display: "flex", gap: 6 }}>
-                {[1, 2, 3, 4, 5].map((m) => (
-                  <button
-                    key={m}
-                    type="button"
-                    aria-label={`心情 ${m} 星`}
-                    onClick={() => set("mood", form.mood === m ? null : m)}
-                    style={{ background: "none", border: "none", padding: 2, cursor: "pointer" }}
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={(form.mood ?? 0) >= m ? "/ui/IconStar01a.png" : "/ui/IconStar01e.png"}
-                      alt=""
-                      style={{ height: 26, imageRendering: "pixelated", display: "block" }}
-                    />
-                  </button>
-                ))}
+              <label>
+                {t("dashboard.mood")}
+                {form.mood ? ` (${form.mood}/5)` : ""}
+              </label>
+              {/* 暗红底小条：选中的星金色「亮起」，未选中为暗淡星影 */}
+              <div
+                style={{
+                  display: "inline-flex",
+                  gap: 8,
+                  background: "var(--maroon)",
+                  border: "2px solid var(--ink)",
+                  padding: "6px 10px",
+                }}
+              >
+                {[1, 2, 3, 4, 5].map((m) => {
+                  const filled = (form.mood ?? 0) >= m;
+                  return (
+                    <button
+                      key={m}
+                      type="button"
+                      aria-label={`mood ${m}`}
+                      onClick={() => set("mood", form.mood === m ? null : m)}
+                      style={{ background: "none", border: "none", padding: 0, cursor: "pointer" }}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src="/ui/IconStar01a.png"
+                        alt=""
+                        style={{
+                          height: 26,
+                          imageRendering: "pixelated",
+                          display: "block",
+                          opacity: filled ? 1 : 0.28,
+                        }}
+                      />
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>
 
           {/* 食谱 */}
           <div className="card">
-            <SectionTitle icon="food">食谱</SectionTitle>
+            <SectionTitle icon="food">{t("dashboard.food")}</SectionTitle>
             <MealsEditor meals={form.meals} onChange={(meals) => set("meals", meals)} />
           </div>
 
           {/* 备注 */}
           <div className="card">
-            <SectionTitle icon="notes">备注</SectionTitle>
+            <SectionTitle icon="notes">{t("dashboard.notes")}</SectionTitle>
             <textarea
-              placeholder="今天的感受…"
+              placeholder={t("dashboard.notesPlaceholder")}
               value={form.notes}
               onChange={(e) => set("notes", e.target.value)}
             />
           </div>
 
           <button className="btn btn-primary" onClick={onSave} disabled={busy}>
-            {busy ? "保存中…" : "保存今日记录"}
+            {busy ? t("dashboard.saving") : t("dashboard.saveDay")}
           </button>
         </>
       )}
@@ -290,7 +314,7 @@ function DashboardInner() {
 export default function DashboardPage() {
   return (
     <RequireAuth>
-      <Suspense fallback={<div className="center muted">加载中…</div>}>
+      <Suspense fallback={<div className="center muted">…</div>}>
         <DashboardInner />
       </Suspense>
     </RequireAuth>

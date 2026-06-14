@@ -33,6 +33,9 @@ export const MEAL_LABELS: Record<string, string> = {
   snack: "加餐",
 };
 
+// 餐别顺序（i18n 下用 t(`meal.${type}`) 取文案）
+export const MEAL_TYPES = ["breakfast", "lunch", "dinner", "snack"] as const;
+
 export const MOOD_EMOJI: Record<number, string> = {
   1: "😣",
   2: "🙁",
@@ -52,4 +55,12 @@ export function bmiLabel(value: number): string {
   if (value < 24) return "正常";
   if (value < 28) return "偏胖";
   return "肥胖";
+}
+
+// BMI 分级 key（i18n 下用 t(`bmi.${key}`) 取文案）
+export function bmiKey(value: number): "thin" | "normal" | "over" | "obese" {
+  if (value < 18.5) return "thin";
+  if (value < 24) return "normal";
+  if (value < 28) return "over";
+  return "obese";
 }

@@ -5,6 +5,7 @@ from datetime import date, timedelta
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
+from app.core.i18n import get_lang, translate
 from app.database import get_db
 from app.deps import get_current_user
 from app.models.season import Season, SeasonParticipant
@@ -27,6 +28,7 @@ def create_season(
     payload: SeasonCreate,
     db: Session = Depends(get_db),
     current: User = Depends(get_current_user),
+    lang: str = Depends(get_lang),
 ):
     """创建赛季，并加入参与者（基数体重在此登记）。"""
     end_date = payload.start_date + timedelta(weeks=payload.duration_weeks) - timedelta(days=1)
@@ -46,7 +48,9 @@ def create_season(
         if p.user_id in seen:
             continue
         if db.get(User, p.user_id) is None:
-            raise HTTPException(status_code=400, detail=f"用户 {p.user_id} 不存在")
+            raise HTTPException(
+                status_code=400, detail=translate("user_id_not_found", lang, id=p.user_id)
+            )
         seen.add(p.user_id)
         db.add(
             SeasonParticipant(
@@ -76,10 +80,13 @@ def list_my_seasons(db: Session = Depends(get_db), current: User = Depends(get_c
 
 @router.get("/{season_id}", response_model=SeasonOut)
 def get_season(
-    season_id: int, db: Session = Depends(get_db), _: User = Depends(get_current_user)
+    season_id: int,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+    lang: str = Depends(get_lang),
 ):
     """查看单个赛季详情。"""
     season = db.get(Season, season_id)
     if season is None:
-        raise HTTPException(status_code=404, detail="赛季不存在")
+        raise HTTPException(status_code=404, detail=translate("season_not_found", lang))
     return _to_out(season)

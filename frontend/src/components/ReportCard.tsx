@@ -7,6 +7,7 @@
 import { forwardRef } from "react";
 
 import Avatar from "@/components/Avatar";
+import { useI18n } from "@/lib/i18n";
 import type { CompetitionResult, ScoreBreakdown, Season } from "@/lib/types";
 
 // 主题色（与 globals.css 一致）
@@ -27,6 +28,23 @@ interface Props {
   result: CompetitionResult;
 }
 
+function Stat({ label, value }: { label: string; value: string }) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        fontSize: 13,
+        padding: "5px 0",
+        borderTop: `1px solid ${C.divider}`,
+      }}
+    >
+      <span style={{ color: C.muted }}>{label}</span>
+      <span style={{ fontWeight: 700 }}>{value}</span>
+    </div>
+  );
+}
+
 function PlayerColumn({
   score,
   isWinner,
@@ -36,6 +54,8 @@ function PlayerColumn({
   isWinner: boolean;
   finished: boolean;
 }) {
+  const { t } = useI18n();
+  const unit = (v: string | number, u: string) => `${v}${u ? " " + u : ""}`;
   return (
     <div
       style={{
@@ -71,7 +91,7 @@ function PlayerColumn({
               fontWeight: 700,
             }}
           >
-            {finished ? "冠军" : "当前领先"}
+            {finished ? t("report.champion") : t("report.leadingNow")}
           </div>
         )}
       </div>
@@ -80,40 +100,25 @@ function PlayerColumn({
         <div style={{ fontSize: 28, fontWeight: 800, color: isWinner ? C.gold : C.red }}>
           {score.total_score}
         </div>
-        <div style={{ fontSize: 11, color: C.muted }}>总得分</div>
+        <div style={{ fontSize: 11, color: C.muted }}>{t("report.cTotalScore")}</div>
       </div>
 
-      <Stat label="减重" value={`${score.total_loss_kg} kg`} />
-      <Stat label="减重比例" value={`${score.total_loss_pct}%`} />
-      <Stat label="基数 → 当前" value={`${score.baseline_weight_kg} → ${score.latest_weight_kg ?? "—"}`} />
-      <Stat label="坚持记录" value={`${score.days_logged} 天`} />
-      <Stat label="坚持运动" value={`${score.days_exercised} 天`} />
-      <Stat label="饮水达标" value={`${score.days_water_goal} 天`} />
-      <Stat label="记录餐数" value={`${score.total_meals_logged} 餐`} />
-      <Stat label="健康减重周" value={`${score.healthy_weeks} 周`} />
-    </div>
-  );
-}
-
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "space-between",
-        fontSize: 13,
-        padding: "5px 0",
-        borderTop: `1px solid ${C.divider}`,
-      }}
-    >
-      <span style={{ color: C.muted }}>{label}</span>
-      <span style={{ fontWeight: 700 }}>{value}</span>
+      <Stat label={t("report.cLoss")} value={unit(score.total_loss_kg, t("report.unitKg"))} />
+      <Stat label={t("report.cLossPct")} value={`${score.total_loss_pct}%`} />
+      <Stat label={t("report.cBaseline")} value={`${score.baseline_weight_kg} → ${score.latest_weight_kg ?? "—"}`} />
+      <Stat label={t("report.cDaysLogged")} value={unit(score.days_logged, t("report.unitDays"))} />
+      <Stat label={t("report.cDaysEx")} value={unit(score.days_exercised, t("report.unitDays"))} />
+      <Stat label={t("report.cWaterGoal")} value={unit(score.days_water_goal, t("report.unitDays"))} />
+      <Stat label={t("report.cMeals")} value={unit(score.total_meals_logged, t("report.unitMeals"))} />
+      <Stat label={t("report.cHealthyWeeks")} value={unit(score.healthy_weeks, t("report.unitWeeks"))} />
     </div>
   );
 }
 
 const ReportCard = forwardRef<HTMLDivElement, Props>(function ReportCard({ season, result }, ref) {
+  const { t, lang } = useI18n();
   const winnerId = result.winner_user_id;
+  const winnerName = result.scores.find((s) => s.user_id === winnerId)?.user?.profile?.display_name;
   return (
     <div
       ref={ref}
@@ -127,18 +132,17 @@ const ReportCard = forwardRef<HTMLDivElement, Props>(function ReportCard({ seaso
     >
       {/* 标题 */}
       <div style={{ textAlign: "center", marginBottom: 12 }}>
-        <div style={{ fontSize: 13, color: C.red, fontWeight: 700 }}>减肥对抗赛 · 赛季战报</div>
+        <div style={{ fontSize: 13, color: C.red, fontWeight: 700 }}>{t("report.cardHeader")}</div>
         <div style={{ fontSize: 20, fontWeight: 800, marginTop: 2 }}>{season.name}</div>
         <div style={{ fontSize: 12, color: C.muted }}>
-          {season.start_date} ~ {season.end_date} · 共 {season.duration_weeks} 周
+          {season.start_date} ~ {season.end_date} · {t("report.totalWeeks", { n: season.duration_weeks })}
         </div>
         <div style={{ marginTop: 6 }}>
           {result.is_tie ? (
-            <span style={{ fontSize: 13, fontWeight: 700, color: C.ink }}>🤝 平局！势均力敌</span>
+            <span style={{ fontSize: 13, fontWeight: 700, color: C.ink }}>{t("report.tie")}</span>
           ) : (
             <span style={{ fontSize: 13, fontWeight: 700, color: C.gold }}>
-              🏆 {result.is_finished ? "最终冠军" : "目前领先"}：
-              {result.scores.find((s) => s.user_id === winnerId)?.user?.profile?.display_name}
+              🏆 {result.is_finished ? t("report.finalChampion") : t("report.currentLeader")}: {winnerName}
             </span>
           )}
         </div>
@@ -157,7 +161,7 @@ const ReportCard = forwardRef<HTMLDivElement, Props>(function ReportCard({ seaso
       </div>
 
       <div style={{ textAlign: "center", fontSize: 11, color: C.muted, marginTop: 12 }}>
-        健康减重 · 争取稳定 · {new Date().toLocaleDateString("zh-CN")}
+        {t("report.footer")} · {new Date().toLocaleDateString(lang === "zh" ? "zh-CN" : "en-US")}
       </div>
     </div>
   );

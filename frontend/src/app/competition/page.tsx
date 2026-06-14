@@ -11,8 +11,9 @@ import CompareRow from "@/components/CompareRow";
 import RequireAuth from "@/components/RequireAuth";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
+import { useI18n } from "@/lib/i18n";
 import type { CompetitionResult, DailyRecord, Participant, Season } from "@/lib/types";
-import { MEAL_LABELS, todayStr } from "@/lib/utils";
+import { todayStr } from "@/lib/utils";
 
 function PlayerHead({
   p,
@@ -25,6 +26,7 @@ function PlayerHead({
   isLeader: boolean;
   side: "left" | "right";
 }) {
+  const { t } = useI18n();
   // 左右各坐一页书页（TravelBookLite 的左/右页）
   const page = side === "left" ? "/ui/BookPageLeft01a.png" : "/ui/BookPageRight01a.png";
   return (
@@ -45,11 +47,12 @@ function PlayerHead({
         {p?.user?.profile?.display_name ?? p?.user?.username ?? "—"}
       </div>
       <div style={{ display: "flex", gap: 4, justifyContent: "center", marginTop: 2 }}>
-        {isMe && <span className="badge badge-green">我</span>}
+        {isMe && <span className="badge badge-green">{t("competition.me")}</span>}
         {isLeader && (
           <span className="badge badge-gold" style={{ display: "inline-flex", alignItems: "center", gap: 3 }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/ui/IconStar01a.png" alt="" style={{ height: 11, imageRendering: "pixelated" }} /> 领先
+            <img src="/ui/IconStar01a.png" alt="" style={{ height: 11, imageRendering: "pixelated" }} />{" "}
+            {t("competition.leading")}
           </span>
         )}
       </div>
@@ -59,6 +62,7 @@ function PlayerHead({
 
 function CompetitionInner() {
   const { user } = useAuth();
+  const { t } = useI18n();
   const params = useSearchParams();
   const seasonId = Number(params.get("season"));
 
@@ -106,7 +110,7 @@ function CompetitionInner() {
   if (!seasonId) {
     return (
       <div className="container">
-        <div className="center">请先从赛季列表选择当前赛季</div>
+        <div className="center">{t("dashboard.pickSeason")}</div>
         <BottomNav />
       </div>
     );
@@ -119,7 +123,7 @@ function CompetitionInner() {
 
   const mealsText = (rec: DailyRecord | null) =>
     rec && rec.meals.length
-      ? rec.meals.map((m) => `${MEAL_LABELS[m.meal_type] ?? m.meal_type}: ${m.description}`)
+      ? rec.meals.map((m) => `${t(`meal.${m.meal_type}`)}: ${m.description}`)
       : null;
 
   return (
@@ -128,7 +132,7 @@ function CompetitionInner() {
         {season?.name}
       </div>
       <h1 className="page-title" style={{ margin: "0 0 12px" }}>
-        ⚔️ 对抗
+        ⚔️ {t("competition.title")}
       </h1>
 
       {/* 选手头像 */}
@@ -162,14 +166,14 @@ function CompetitionInner() {
 
       {/* 累计总分 */}
       <div className="card">
-        <div className="card-title">总得分</div>
+        <div className="card-title">{t("competition.totalScore")}</div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr auto 1fr", alignItems: "center" }}>
           <div className="text-center">
             <div style={{ fontSize: 30, fontWeight: 800, color: "var(--primary)" }}>
               {leftScore?.total_score ?? "—"}
             </div>
           </div>
-          <div className="muted">分</div>
+          <div className="muted">{t("competition.points")}</div>
           <div className="text-center">
             <div style={{ fontSize: 30, fontWeight: 800, color: "var(--accent)" }}>
               {rightScore?.total_score ?? "—"}
@@ -180,14 +184,14 @@ function CompetitionInner() {
         {/* 累计分项与减重 */}
         {leftScore && rightScore && (
           <div className="mt">
-            <CompareRow label="减重 (kg)" left={leftScore.total_loss_kg} right={rightScore.total_loss_kg} better="higher" />
-            <CompareRow label="减重百分比" left={leftScore.total_loss_pct} right={rightScore.total_loss_pct} better="higher" unit="%" />
-            <CompareRow label="减重得分" left={leftScore.weight_score} right={rightScore.weight_score} better="higher" />
-            <CompareRow label="健康稳定分" left={leftScore.stability_score} right={rightScore.stability_score} better="higher" />
-            <CompareRow label="记录天数" left={leftScore.days_logged} right={rightScore.days_logged} better="higher" />
-            <CompareRow label="运动天数" left={leftScore.days_exercised} right={rightScore.days_exercised} better="higher" />
-            <CompareRow label="健康减重周" left={leftScore.healthy_weeks} right={rightScore.healthy_weeks} better="higher" />
-            <CompareRow label="超速减重周" left={leftScore.over_limit_weeks} right={rightScore.over_limit_weeks} better="none" />
+            <CompareRow label={t("competition.lossKg")} left={leftScore.total_loss_kg} right={rightScore.total_loss_kg} better="higher" />
+            <CompareRow label={t("competition.lossPct")} left={leftScore.total_loss_pct} right={rightScore.total_loss_pct} better="higher" unit="%" />
+            <CompareRow label={t("competition.weightScore")} left={leftScore.weight_score} right={rightScore.weight_score} better="higher" />
+            <CompareRow label={t("competition.stabilityScore")} left={leftScore.stability_score} right={rightScore.stability_score} better="higher" />
+            <CompareRow label={t("competition.daysLogged")} left={leftScore.days_logged} right={rightScore.days_logged} better="higher" />
+            <CompareRow label={t("competition.daysExercised")} left={leftScore.days_exercised} right={rightScore.days_exercised} better="higher" />
+            <CompareRow label={t("competition.healthyWeeks")} left={leftScore.healthy_weeks} right={rightScore.healthy_weeks} better="higher" />
+            <CompareRow label={t("competition.overWeeks")} left={leftScore.over_limit_weeks} right={rightScore.over_limit_weeks} better="none" />
           </div>
         )}
       </div>
@@ -196,7 +200,7 @@ function CompetitionInner() {
       <div className="card">
         <div className="flex-between" style={{ marginBottom: 8 }}>
           <div className="card-title" style={{ margin: 0 }}>
-            当日数据
+            {t("competition.todayData")}
           </div>
           <input
             type="date"
@@ -206,33 +210,33 @@ function CompetitionInner() {
           />
         </div>
         {loading ? (
-          <p className="muted">加载中…</p>
+          <p className="muted">{t("common.loading")}</p>
         ) : (
           <>
-            <CompareRow label="体重 (kg)" left={leftRec?.weight_kg ?? null} right={rightRec?.weight_kg ?? null} better="none" />
-            <CompareRow label="喝水 (ml)" left={leftRec?.water_ml ?? null} right={rightRec?.water_ml ?? null} better="higher" />
-            <CompareRow label="运动 (分钟)" left={leftRec?.exercise_minutes ?? null} right={rightRec?.exercise_minutes ?? null} better="higher" />
-            <CompareRow label="消耗 (千卡)" left={leftRec?.exercise_kcal ?? null} right={rightRec?.exercise_kcal ?? null} better="higher" />
-            <CompareRow label="步数" left={leftRec?.steps ?? null} right={rightRec?.steps ?? null} better="higher" />
-            <CompareRow label="睡眠 (h)" left={leftRec?.sleep_hours ?? null} right={rightRec?.sleep_hours ?? null} better="none" />
+            <CompareRow label={t("competition.weightRow")} left={leftRec?.weight_kg ?? null} right={rightRec?.weight_kg ?? null} better="none" />
+            <CompareRow label={t("competition.waterRow")} left={leftRec?.water_ml ?? null} right={rightRec?.water_ml ?? null} better="higher" />
+            <CompareRow label={t("competition.exerciseRow")} left={leftRec?.exercise_minutes ?? null} right={rightRec?.exercise_minutes ?? null} better="higher" />
+            <CompareRow label={t("competition.kcalRow")} left={leftRec?.exercise_kcal ?? null} right={rightRec?.exercise_kcal ?? null} better="higher" />
+            <CompareRow label={t("competition.stepsRow")} left={leftRec?.steps ?? null} right={rightRec?.steps ?? null} better="higher" />
+            <CompareRow label={t("competition.sleepRow")} left={leftRec?.sleep_hours ?? null} right={rightRec?.sleep_hours ?? null} better="none" />
 
             {/* 食谱对比 */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 12 }}>
               <div>
-                <div className="muted" style={{ fontSize: 12, marginBottom: 4 }}>我的食谱</div>
-                {mealsText(leftRec)?.map((t, i) => (
+                <div className="muted" style={{ fontSize: 12, marginBottom: 4 }}>{t("competition.myMeals")}</div>
+                {mealsText(leftRec)?.map((tx, i) => (
                   <div key={i} style={{ fontSize: 13 }}>
-                    {t}
+                    {tx}
                   </div>
-                )) ?? <div className="muted" style={{ fontSize: 13 }}>无</div>}
+                )) ?? <div className="muted" style={{ fontSize: 13 }}>{t("common.none")}</div>}
               </div>
               <div style={{ textAlign: "right" }}>
-                <div className="muted" style={{ fontSize: 12, marginBottom: 4 }}>对手食谱</div>
-                {mealsText(rightRec)?.map((t, i) => (
+                <div className="muted" style={{ fontSize: 12, marginBottom: 4 }}>{t("competition.oppMeals")}</div>
+                {mealsText(rightRec)?.map((tx, i) => (
                   <div key={i} style={{ fontSize: 13 }}>
-                    {t}
+                    {tx}
                   </div>
-                )) ?? <div className="muted" style={{ fontSize: 13 }}>无</div>}
+                )) ?? <div className="muted" style={{ fontSize: 13 }}>{t("common.none")}</div>}
               </div>
             </div>
           </>
@@ -247,7 +251,7 @@ function CompetitionInner() {
 export default function CompetitionPage() {
   return (
     <RequireAuth>
-      <Suspense fallback={<div className="center muted">加载中…</div>}>
+      <Suspense fallback={<div className="center muted">…</div>}>
         <CompetitionInner />
       </Suspense>
     </RequireAuth>

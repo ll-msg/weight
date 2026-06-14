@@ -6,12 +6,15 @@ import Link from "next/link";
 import { Suspense, useState } from "react";
 
 import BottomNav from "@/components/BottomNav";
+import LangToggle from "@/components/LangToggle";
 import RequireAuth from "@/components/RequireAuth";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
+import { useI18n } from "@/lib/i18n";
 
 function SettingsInner() {
   const { user, logout } = useAuth();
+  const { t } = useI18n();
 
   const [oldPwd, setOldPwd] = useState("");
   const [newPwd, setNewPwd] = useState("");
@@ -23,26 +26,26 @@ function SettingsInner() {
     e.preventDefault();
     setMsg(null);
     if (newPwd.length < 4) {
-      setMsg({ type: "err", text: "新密码至少 4 位" });
+      setMsg({ type: "err", text: t("settings.pwdTooShort") });
       return;
     }
     if (newPwd !== confirmPwd) {
-      setMsg({ type: "err", text: "两次输入的新密码不一致" });
+      setMsg({ type: "err", text: t("settings.mismatch") });
       return;
     }
     if (newPwd === oldPwd) {
-      setMsg({ type: "err", text: "新密码不能与当前密码相同" });
+      setMsg({ type: "err", text: t("settings.sameAsOld") });
       return;
     }
     setBusy(true);
     try {
       await api.changePassword(oldPwd, newPwd);
-      setMsg({ type: "ok", text: "密码已修改 ✅" });
+      setMsg({ type: "ok", text: t("settings.changed") });
       setOldPwd("");
       setNewPwd("");
       setConfirmPwd("");
     } catch (err) {
-      setMsg({ type: "err", text: err instanceof Error ? err.message : "修改失败" });
+      setMsg({ type: "err", text: err instanceof Error ? err.message : t("settings.changeFail") });
     } finally {
       setBusy(false);
     }
@@ -52,26 +55,29 @@ function SettingsInner() {
     <div className="container">
       <div className="flex-between" style={{ marginTop: 12 }}>
         <h1 className="page-title" style={{ margin: 0 }}>
-          设置
+          {t("settings.title")}
         </h1>
-        <Link href="/seasons" className="btn btn-secondary btn-sm">
-          返回
-        </Link>
+        <div style={{ display: "flex", gap: 8 }}>
+          <LangToggle />
+          <Link href="/seasons" className="btn btn-secondary btn-sm">
+            {t("common.back")}
+          </Link>
+        </div>
       </div>
 
       <div className="card">
-        <div className="card-title">账号</div>
+        <div className="card-title">{t("settings.account")}</div>
         <div className="muted" style={{ fontSize: 13 }}>
-          当前用户：{user?.profile?.display_name}（{user?.username}）
+          {t("settings.currentUser")}: {user?.profile?.display_name} ({user?.username})
         </div>
       </div>
 
       <form className="card" onSubmit={onSubmit}>
-        <div className="card-title">修改密码</div>
+        <div className="card-title">{t("settings.changePassword")}</div>
         {msg && <div className={msg.type === "ok" ? "success" : "error"}>{msg.text}</div>}
 
         <div className="field">
-          <label>当前密码</label>
+          <label>{t("settings.currentPwd")}</label>
           <input
             type="password"
             value={oldPwd}
@@ -81,7 +87,7 @@ function SettingsInner() {
           />
         </div>
         <div className="field">
-          <label>新密码（至少 4 位）</label>
+          <label>{t("settings.newPwd")}</label>
           <input
             type="password"
             value={newPwd}
@@ -92,7 +98,7 @@ function SettingsInner() {
           />
         </div>
         <div className="field">
-          <label>确认新密码</label>
+          <label>{t("settings.confirmPwd")}</label>
           <input
             type="password"
             value={confirmPwd}
@@ -103,12 +109,12 @@ function SettingsInner() {
           />
         </div>
         <button className="btn btn-primary" disabled={busy}>
-          {busy ? "提交中…" : "保存新密码"}
+          {busy ? t("settings.saving") : t("settings.savePwd")}
         </button>
       </form>
 
       <button className="btn btn-secondary" onClick={logout}>
-        退出登录
+        {t("settings.logout")}
       </button>
 
       <BottomNav />
@@ -119,7 +125,7 @@ function SettingsInner() {
 export default function SettingsPage() {
   return (
     <RequireAuth>
-      <Suspense fallback={<div className="center muted">加载中…</div>}>
+      <Suspense fallback={<div className="center muted">…</div>}>
         <SettingsInner />
       </Suspense>
     </RequireAuth>

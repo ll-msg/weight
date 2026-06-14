@@ -7,12 +7,15 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import Avatar from "@/components/Avatar";
+import LangToggle from "@/components/LangToggle";
 import { useAuth } from "@/lib/auth";
 import { AVATAR_OPTIONS, DEFAULT_AVATAR } from "@/lib/avatars";
+import { useI18n } from "@/lib/i18n";
 import type { ProfileInput } from "@/lib/types";
 
 export default function RegisterPage() {
   const { register } = useAuth();
+  const { t } = useI18n();
   const router = useRouter();
 
   const [username, setUsername] = useState("");
@@ -42,7 +45,7 @@ export default function RegisterPage() {
       await register(username.trim(), password, profile);
       router.replace("/seasons");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "注册失败");
+      setError(err instanceof Error ? err.message : t("register.fail"));
     } finally {
       setBusy(false);
     }
@@ -50,21 +53,24 @@ export default function RegisterPage() {
 
   return (
     <div className="container">
-      <h1 className="page-title" style={{ marginTop: 16 }}>
-        创建账号
-      </h1>
+      <div className="flex-between" style={{ marginTop: 16 }}>
+        <h1 className="page-title" style={{ margin: 0 }}>
+          {t("register.title")}
+        </h1>
+        <LangToggle />
+      </div>
 
       <form onSubmit={onSubmit}>
         {error && <div className="error">{error}</div>}
 
         <div className="card">
-          <div className="card-title">账号</div>
+          <div className="card-title">{t("register.account")}</div>
           <div className="field">
-            <label>用户名</label>
+            <label>{t("login.username")}</label>
             <input value={username} onChange={(e) => setUsername(e.target.value)} required minLength={2} />
           </div>
           <div className="field">
-            <label>密码</label>
+            <label>{t("login.password")}</label>
             <input
               type="password"
               value={password}
@@ -76,10 +82,10 @@ export default function RegisterPage() {
         </div>
 
         <div className="card">
-          <div className="card-title">基础资料</div>
+          <div className="card-title">{t("register.profile")}</div>
 
           <div className="field">
-            <label>昵称</label>
+            <label>{t("register.displayName")}</label>
             <input
               value={profile.display_name}
               onChange={(e) => update("display_name", e.target.value)}
@@ -88,7 +94,7 @@ export default function RegisterPage() {
           </div>
 
           <div className="field">
-            <label>头像</label>
+            <label>{t("register.avatar")}</label>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
               {AVATAR_OPTIONS.map((a) => (
                 <button
@@ -111,15 +117,15 @@ export default function RegisterPage() {
 
           <div className="row">
             <div className="field">
-              <label>性别</label>
+              <label>{t("register.gender")}</label>
               <select value={profile.gender} onChange={(e) => update("gender", e.target.value)}>
-                <option value="male">男</option>
-                <option value="female">女</option>
-                <option value="other">其他</option>
+                <option value="male">{t("gender.male")}</option>
+                <option value="female">{t("gender.female")}</option>
+                <option value="other">{t("gender.other")}</option>
               </select>
             </div>
             <div className="field">
-              <label>生日</label>
+              <label>{t("register.birthday")}</label>
               <input
                 type="date"
                 value={profile.birth_date ?? ""}
@@ -130,7 +136,7 @@ export default function RegisterPage() {
 
           <div className="row">
             <div className="field">
-              <label>身高 (cm)</label>
+              <label>{t("register.height")}</label>
               <input
                 type="number"
                 step="0.1"
@@ -140,22 +146,22 @@ export default function RegisterPage() {
               />
             </div>
             <div className="field">
-              <label>活动水平</label>
+              <label>{t("register.activity")}</label>
               <select
                 value={profile.activity_level}
                 onChange={(e) => update("activity_level", e.target.value)}
               >
-                <option value="sedentary">久坐</option>
-                <option value="light">轻度活动</option>
-                <option value="moderate">中度活动</option>
-                <option value="active">高强度活动</option>
+                <option value="sedentary">{t("activity.sedentary")}</option>
+                <option value="light">{t("activity.light")}</option>
+                <option value="moderate">{t("activity.moderate")}</option>
+                <option value="active">{t("activity.active")}</option>
               </select>
             </div>
           </div>
 
           <div className="row">
             <div className="field">
-              <label>初始体重 (kg)</label>
+              <label>{t("register.startWeight")}</label>
               <input
                 type="number"
                 step="0.1"
@@ -165,7 +171,7 @@ export default function RegisterPage() {
               />
             </div>
             <div className="field">
-              <label>目标体重 (kg)</label>
+              <label>{t("register.targetWeight")}</label>
               <input
                 type="number"
                 step="0.1"
@@ -179,12 +185,15 @@ export default function RegisterPage() {
         </div>
 
         <button className="btn btn-primary" disabled={busy}>
-          {busy ? "创建中…" : "注册并进入"}
+          {busy ? t("register.submitting") : t("register.submit")}
         </button>
       </form>
 
       <p className="text-center muted" style={{ fontSize: 14 }}>
-        已有账号？ <Link href="/login" style={{ color: "var(--primary)", fontWeight: 600 }}>去登录</Link>
+        {t("register.haveAccount")}{" "}
+        <Link href="/login" style={{ color: "var(--primary)", fontWeight: 600 }}>
+          {t("register.login")}
+        </Link>
       </p>
     </div>
   );

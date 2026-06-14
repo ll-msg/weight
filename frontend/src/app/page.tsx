@@ -6,9 +6,11 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 import { useAuth } from "@/lib/auth";
+import { useI18n } from "@/lib/i18n";
 
 export default function Home() {
   const { user, loading } = useAuth();
+  const { t } = useI18n();
   const router = useRouter();
 
   useEffect(() => {
@@ -19,8 +21,8 @@ export default function Home() {
   return (
     <div className="center">
       <div style={{ fontSize: 40 }}>⚖️</div>
-      <div className="page-title">减肥对抗赛</div>
-      <div className="muted">正在进入…</div>
+      <div className="page-title">{t("common.appName")}</div>
+      <div className="muted">{t("common.entering")}</div>
     </div>
   );
 }

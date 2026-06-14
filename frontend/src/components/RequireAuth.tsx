@@ -6,9 +6,11 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 import { useAuth } from "@/lib/auth";
+import { useI18n } from "@/lib/i18n";
 
 export default function RequireAuth({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
+  const { t } = useI18n();
   const router = useRouter();
 
   useEffect(() => {
@@ -19,7 +21,7 @@ export default function RequireAuth({ children }: { children: React.ReactNode })
     return (
       <div className="center">
         <div style={{ fontSize: 32 }}>⏳</div>
-        <div className="muted">加载中…</div>
+        <div className="muted">{t("common.loading")}</div>
       </div>
     );
   }

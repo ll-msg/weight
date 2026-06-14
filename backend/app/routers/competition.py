@@ -8,6 +8,7 @@ from datetime import date
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
+from app.core.i18n import get_lang, translate
 from app.database import get_db
 from app.deps import get_current_user
 from app.models.record import DailyRecord
@@ -25,11 +26,12 @@ def get_competition_result(
     season_id: int,
     db: Session = Depends(get_db),
     _: User = Depends(get_current_user),
+    lang: str = Depends(get_lang),
 ):
     """计算某赛季所有参与者的评分明细与胜者。"""
     season = db.get(Season, season_id)
     if season is None:
-        raise HTTPException(status_code=404, detail="赛季不存在")
+        raise HTTPException(status_code=404, detail=translate("season_not_found", lang))
 
     today = date.today()
     # 对抗与得分按「赛季结束日」与「今天」中较早者截止，避免把未来计入

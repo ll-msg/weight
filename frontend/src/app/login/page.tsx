@@ -6,10 +6,13 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import LangToggle from "@/components/LangToggle";
 import { useAuth } from "@/lib/auth";
+import { useI18n } from "@/lib/i18n";
 
 export default function LoginPage() {
   const { login } = useAuth();
+  const { t } = useI18n();
   const router = useRouter();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -24,30 +27,37 @@ export default function LoginPage() {
       await login(username.trim(), password);
       router.replace("/seasons");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "登录失败");
+      setError(err instanceof Error ? err.message : t("login.fail"));
     } finally {
       setBusy(false);
     }
   }
 
   return (
-    <div className="container" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-      <div className="text-center" style={{ margin: "28px 0 20px" }}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <h1 className="page-title" style={{ margin: "12px 0 4px" }}>
-          减肥对抗赛
-        </h1>
-        <div className="subtitle">登录开始你的健康对决</div>
+    <div
+      className="container"
+      style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", minHeight: "100vh" }}
+    >
+      {/* 中英文切换：放在最初始界面右上角 */}
+      <div style={{ position: "absolute", top: 16, right: 16 }}>
+        <LangToggle />
       </div>
 
-      <form className="card" onSubmit={onSubmit}>
+      <div className="text-center" style={{ margin: "28px 0 20px" }}>
+        <h1 className="page-title" style={{ margin: "12px 0 4px" }}>
+          {t("common.appName")}
+        </h1>
+        <div className="subtitle">{t("login.subtitle")}</div>
+      </div>
+
+      <form className="card" onSubmit={onSubmit} style={{ width: "100%" }}>
         {error && <div className="error">{error}</div>}
         <div className="field">
-          <label>用户名</label>
+          <label>{t("login.username")}</label>
           <input value={username} onChange={(e) => setUsername(e.target.value)} required />
         </div>
         <div className="field">
-          <label>密码</label>
+          <label>{t("login.password")}</label>
           <input
             type="password"
             value={password}
@@ -56,12 +66,15 @@ export default function LoginPage() {
           />
         </div>
         <button className="btn btn-primary" disabled={busy}>
-          {busy ? "登录中…" : "登录"}
+          {busy ? t("login.submitting") : t("login.submit")}
         </button>
       </form>
 
       <p className="text-center muted" style={{ fontSize: 14 }}>
-        还没有账号？ <Link href="/register" style={{ color: "var(--primary)", fontWeight: 600 }}>立即注册</Link>
+        {t("login.noAccount")}{" "}
+        <Link href="/register" style={{ color: "var(--primary)", fontWeight: 600 }}>
+          {t("login.register")}
+        </Link>
       </p>
     </div>
   );

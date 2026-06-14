@@ -3,6 +3,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
+from app.core.i18n import get_lang, translate
 from app.database import get_db
 from app.deps import get_current_user
 from app.models.user import User
@@ -23,11 +24,12 @@ def update_my_profile(
     payload: ProfileUpdate,
     db: Session = Depends(get_db),
     current: User = Depends(get_current_user),
+    lang: str = Depends(get_lang),
 ):
     """更新当前用户的基础资料。"""
     profile = current.profile
     if profile is None:
-        raise HTTPException(status_code=404, detail="资料不存在")
+        raise HTTPException(status_code=404, detail=translate("profile_not_found", lang))
     # 仅更新提供的字段
     for field, value in payload.model_dump(exclude_unset=True).items():
         setattr(profile, field, value)

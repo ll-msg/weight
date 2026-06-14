@@ -41,6 +41,10 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   };
   const token = getToken();
   if (token) headers["Authorization"] = `Bearer ${token}`;
+  // 把当前语言带给后端，使其返回本地化的错误信息
+  if (typeof window !== "undefined") {
+    headers["X-Lang"] = window.localStorage.getItem("lw_lang") || "zh";
+  }
 
   const res = await fetch(`${API_BASE}${path}`, { ...options, headers });
 

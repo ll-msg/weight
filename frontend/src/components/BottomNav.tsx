@@ -5,17 +5,20 @@
 import { usePathname, useSearchParams } from "next/navigation";
 import Link from "next/link";
 
+import { useI18n } from "@/lib/i18n";
+
 // 用 TravelBookLite 像素图标作为导航图标
 const ITEMS = [
-  { href: "/dashboard", icon: "/ui/IconHeart.png", label: "记录" },
-  { href: "/competition", icon: "/ui/IconEnergy.png", label: "对抗" },
-  { href: "/report", icon: "/ui/IconStar.png", label: "战报" },
-  { href: "/seasons", icon: "/ui/IconHome.png", label: "赛季" },
+  { href: "/dashboard", icon: "/ui/IconHeart.png", key: "nav.record" },
+  { href: "/competition", icon: "/ui/IconEnergy.png", key: "nav.versus" },
+  { href: "/report", icon: "/ui/IconStar.png", key: "nav.report" },
+  { href: "/seasons", icon: "/ui/IconHome.png", key: "nav.season" },
 ];
 
 export default function BottomNav() {
   const pathname = usePathname();
   const params = useSearchParams();
+  const { t } = useI18n();
   const seasonId = params.get("season");
   // 记录/对抗/战报需要携带赛季 id；赛季页不需要
   const query = seasonId ? `?season=${seasonId}` : "";
@@ -28,8 +31,8 @@ export default function BottomNav() {
         return (
           <Link key={it.href} href={href} className={active ? "active" : ""}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img className="nav-icon" src={it.icon} alt={it.label} />
-            {it.label}
+            <img className="nav-icon" src={it.icon} alt={t(it.key)} />
+            {t(it.key)}
           </Link>
         );
       })}

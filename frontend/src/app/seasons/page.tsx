@@ -11,11 +11,13 @@ import BottomNav from "@/components/BottomNav";
 import RequireAuth from "@/components/RequireAuth";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
+import { useI18n } from "@/lib/i18n";
 import type { Season, UserBrief } from "@/lib/types";
 import { todayStr } from "@/lib/utils";
 
 function SeasonsInner() {
   const { user, logout } = useAuth();
+  const { t } = useI18n();
   const router = useRouter();
 
   const [seasons, setSeasons] = useState<Season[]>([]);
@@ -60,7 +62,7 @@ function SeasonsInner() {
     e.preventDefault();
     setError("");
     if (opponentId === "") {
-      setError("请选择一位对手");
+      setError(t("seasons.pickOpponent"));
       return;
     }
     setBusy(true);
@@ -76,7 +78,7 @@ function SeasonsInner() {
       });
       router.push(`/dashboard?season=${season.id}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "创建失败");
+      setError(err instanceof Error ? err.message : t("seasons.createFail"));
     } finally {
       setBusy(false);
     }
@@ -87,7 +89,7 @@ function SeasonsInner() {
       <div className="flex-between" style={{ marginTop: 12 }}>
         <div>
           <div className="muted" style={{ fontSize: 13, display: "flex", alignItems: "center", gap: 4 }}>
-            你好 <Avatar value={user?.profile?.avatar} size={16} />
+            {t("seasons.hello")} <Avatar value={user?.profile?.avatar} size={16} />
           </div>
           <h1 className="page-title" style={{ margin: 0 }}>
             {user?.profile?.display_name}
@@ -98,13 +100,13 @@ function SeasonsInner() {
             href="/settings"
             className="btn btn-secondary btn-sm"
             style={{ display: "inline-flex", alignItems: "center", gap: 4 }}
-            title="设置"
+            title={t("seasons.settings")}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/ui/IconGear.png" alt="设置" style={{ height: 14, imageRendering: "pixelated" }} />
+            <img src="/ui/IconGear.png" alt={t("seasons.settings")} style={{ height: 14, imageRendering: "pixelated" }} />
           </Link>
           <button className="btn btn-secondary btn-sm" onClick={logout}>
-            退出
+            {t("common.logout")}
           </button>
         </div>
       </div>
@@ -112,25 +114,25 @@ function SeasonsInner() {
       {/* 创建赛季 */}
       {!showCreate ? (
         <button className="btn btn-primary mb" onClick={() => setShowCreate(true)}>
-          + 创建新赛季
+          {t("seasons.createNew")}
         </button>
       ) : (
         <form className="card" onSubmit={onCreate}>
-          <div className="card-title">创建赛季</div>
+          <div className="card-title">{t("seasons.createTitle")}</div>
           {error && <div className="error">{error}</div>}
 
           <div className="field">
-            <label>赛季名称</label>
-            <input value={name} onChange={(e) => setName(e.target.value)} placeholder="如：夏日燃脂战" required />
+            <label>{t("seasons.name")}</label>
+            <input value={name} onChange={(e) => setName(e.target.value)} placeholder={t("seasons.namePlaceholder")} required />
           </div>
 
           <div className="row">
             <div className="field">
-              <label>开始日期</label>
+              <label>{t("seasons.startDate")}</label>
               <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} required />
             </div>
             <div className="field">
-              <label>时长（周）</label>
+              <label>{t("seasons.duration")}</label>
               <input
                 type="number"
                 min={1}
@@ -143,7 +145,7 @@ function SeasonsInner() {
           </div>
 
           <div className="field">
-            <label>我的基数体重 (kg)</label>
+            <label>{t("seasons.myBaseline")}</label>
             <input
               type="number"
               step="0.1"
@@ -154,13 +156,13 @@ function SeasonsInner() {
           </div>
 
           <div className="field">
-            <label>对手</label>
+            <label>{t("seasons.opponent")}</label>
             <select
               value={opponentId}
               onChange={(e) => setOpponentId(e.target.value ? parseInt(e.target.value) : "")}
               required
             >
-              <option value="">选择对手…</option>
+              <option value="">{t("seasons.selectOpponent")}</option>
               {users.map((u) => (
                 <option key={u.id} value={u.id}>
                   {u.profile?.display_name ?? u.username}
@@ -171,7 +173,7 @@ function SeasonsInner() {
 
           {opponentId !== "" && (
             <div className="field">
-              <label>对手基数体重 (kg)</label>
+              <label>{t("seasons.oppBaseline")}</label>
               <input
                 type="number"
                 step="0.1"
@@ -184,15 +186,15 @@ function SeasonsInner() {
 
           <div className="row">
             <button type="button" className="btn btn-secondary" onClick={() => setShowCreate(false)}>
-              取消
+              {t("common.cancel")}
             </button>
             <button className="btn btn-primary" disabled={busy}>
-              {busy ? "创建中…" : "创建并开始"}
+              {busy ? t("seasons.creating") : t("seasons.create")}
             </button>
           </div>
           {users.length === 0 && (
             <p className="muted text-center" style={{ fontSize: 13, marginTop: 10 }}>
-              还没有其他用户可作为对手，先去注册一个对手账号吧。
+              {t("seasons.noUsers")}
             </p>
           )}
         </form>
@@ -200,19 +202,19 @@ function SeasonsInner() {
 
       {/* 赛季列表 */}
       <h2 className="card-title" style={{ marginTop: 8 }}>
-        我的赛季
+        {t("seasons.mySeasons")}
       </h2>
       {loading ? (
-        <p className="muted">加载中…</p>
+        <p className="muted">{t("common.loading")}</p>
       ) : seasons.length === 0 ? (
-        <p className="muted">还没有赛季，创建一个开始对抗吧！</p>
+        <p className="muted">{t("seasons.empty")}</p>
       ) : (
         seasons.map((s) => (
           <Link key={s.id} href={`/dashboard?season=${s.id}`} className="list-item">
             <div>
               <div style={{ fontWeight: 600 }}>{s.name}</div>
               <div className="muted" style={{ fontSize: 12 }}>
-                {s.start_date} ~ {s.end_date} · {s.duration_weeks} 周
+                {s.start_date} ~ {s.end_date} · {t("seasons.weeksShort", { n: s.duration_weeks })}
               </div>
               <div style={{ marginTop: 4 }}>
                 {s.participants.map((p) => (
@@ -227,7 +229,7 @@ function SeasonsInner() {
               </div>
             </div>
             <span className={`badge ${s.is_finished ? "badge-gray" : "badge-green"}`}>
-              {s.is_finished ? "已结束" : "进行中"}
+              {s.is_finished ? t("seasons.finished") : t("seasons.ongoing")}
             </span>
           </Link>
         ))
@@ -241,7 +243,7 @@ function SeasonsInner() {
 export default function SeasonsPage() {
   return (
     <RequireAuth>
-      <Suspense fallback={<div className="center muted">加载中…</div>}>
+      <Suspense fallback={<div className="center muted">…</div>}>
         <SeasonsInner />
       </Suspense>
     </RequireAuth>

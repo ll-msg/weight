@@ -5,6 +5,7 @@ from datetime import date
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
+from app.core.i18n import get_lang, translate
 from app.database import get_db
 from app.deps import get_current_user
 from app.models.record import DailyRecord, MealRecord
@@ -15,7 +16,7 @@ from app.schemas.record import DailyRecordOut, DailyRecordUpsert
 router = APIRouter(prefix="/api/records", tags=["records"])
 
 
-def _ensure_participant(db: Session, user_id: int, season_id: int) -> None:
+def _ensure_participant(db: Session, user_id: int, season_id: int, lang: str = "zh") -> None:
     """确认该用户确实是该赛季的参与者。"""
     p = (
         db.query(SeasonParticipant)
@@ -26,7 +27,7 @@ def _ensure_participant(db: Session, user_id: int, season_id: int) -> None:
         .first()
     )
     if p is None:
-        raise HTTPException(status_code=403, detail="你不是该赛季的参与者")
+        raise HTTPException(status_code=403, detail=translate("not_participant", lang))
 
 
 @router.put("", response_model=DailyRecordOut)
@@ -34,9 +35,10 @@ def upsert_record(
     payload: DailyRecordUpsert,
     db: Session = Depends(get_db),
     current: User = Depends(get_current_user),
+    lang: str = Depends(get_lang),
 ):
     """新增或更新当前用户在某赛季某天的记录（含整组餐食覆盖）。"""
-    _ensure_participant(db, current.id, payload.season_id)
+    _ensure_participant(db, current.id, payload.season_id, lang)
 
     record = (
         db.query(DailyRecord)
@@ -84,10 +86,11 @@ def list_records(
     user_id: int | None = Query(None, description="不传则查自己；对抗页传对手 id"),
     db: Session = Depends(get_db),
     current: User = Depends(get_current_user),
+    lang: str = Depends(get_lang),
 ):
     """查询某赛季内某用户的全部每日记录（按日期升序）。"""
     target_user = user_id or current.id
-    _ensure_participant(db, target_user, season_id)
+    _ensure_participant(db, target_user, season_id, lang)
     records = (
         db.query(DailyRecord)
         .filter(DailyRecord.user_id == target_user, DailyRecord.season_id == season_id)
@@ -104,10 +107,11 @@ def get_day(
     user_id: int | None = Query(None),
     db: Session = Depends(get_db),
     current: User = Depends(get_current_user),
+    lang: str = Depends(get_lang),
 ):
     """查询某用户某天的单条记录，没有则返回 null。"""
     target_user = user_id or current.id
-    _ensure_participant(db, target_user, season_id)
+    _ensure_participant(db, target_user, season_id, lang)
     record = (
         db.query(DailyRecord)
         .filter(
