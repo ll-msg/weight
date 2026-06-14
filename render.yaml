@@ -15,7 +15,7 @@ services:
   # ---------- 后端：FastAPI ----------
   - type: web
     name: loseweight-api
-    env: python
+    runtime: python
     plan: free
     rootDir: backend
     buildCommand: pip install -r requirements.txt
@@ -32,7 +32,7 @@ services:
       # 自动生成随机密钥用于 JWT 签名
       - key: SECRET_KEY
         generateValue: true
-      # 自动注入前端域名作为允许的跨域来源
+      # 自动注入前端域名作为允许的跨域来源（config 会自动补 https://）
       - key: CORS_ORIGINS
         fromService:
           name: loseweight-web
@@ -42,14 +42,14 @@ services:
   # ---------- 前端：Next.js 静态导出 ----------
   - type: web
     name: loseweight-web
-    env: static
+    runtime: static
     rootDir: frontend
     buildCommand: npm install && npm run build
-    publishPath: out
+    staticPublishPath: out
     envVars:
       - key: NODE_VERSION
         value: 20.11.1
-      # 自动注入后端域名
+      # 自动注入后端域名（api.ts 会自动补 https://）
       - key: NEXT_PUBLIC_API_BASE
         fromService:
           name: loseweight-api
