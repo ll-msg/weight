@@ -75,6 +75,12 @@ export const api = {
 
   me: () => request<User>("/api/auth/me"),
 
+  changePassword: (old_password: string, new_password: string) =>
+    request<void>("/api/auth/change-password", {
+      method: "POST",
+      body: JSON.stringify({ old_password, new_password }),
+    }),
+
   // ---- 用户 ----
   listUsers: () => request<UserBrief[]>("/api/users"),
   updateProfile: (data: Partial<ProfileInput>) =>

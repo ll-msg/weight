@@ -8,7 +8,7 @@ from app.database import get_db
 from app.deps import get_current_user
 from app.models.profile import UserProfile
 from app.models.user import User
-from app.schemas.user import Token, UserLogin, UserOut, UserRegister
+from app.schemas.user import PasswordChange, Token, UserLogin, UserOut, UserRegister
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
@@ -45,3 +45,16 @@ def login(payload: UserLogin, db: Session = Depends(get_db)):
 def me(current: User = Depends(get_current_user)):
     """获取当前登录用户信息。"""
     return current
+
+
+@router.post("/change-password", status_code=status.HTTP_204_NO_CONTENT)
+def change_password(
+    payload: PasswordChange,
+    db: Session = Depends(get_db),
+    current: User = Depends(get_current_user),
+):
+    """修改当前登录用户的密码：先校验当前密码，再写入新密码哈希。"""
+    if not verify_password(payload.old_password, current.password_hash):
+        raise HTTPException(status_code=400, detail="当前密码不正确")
+    current.password_hash = hash_password(payload.new_password)
+    db.commit()

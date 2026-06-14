@@ -93,9 +93,20 @@ function SeasonsInner() {
             {user?.profile?.display_name}
           </h1>
         </div>
-        <button className="btn btn-secondary btn-sm" onClick={logout}>
-          退出
-        </button>
+        <div style={{ display: "flex", gap: 8 }}>
+          <Link
+            href="/settings"
+            className="btn btn-secondary btn-sm"
+            style={{ display: "inline-flex", alignItems: "center", gap: 4 }}
+            title="设置"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/ui/IconGear.png" alt="设置" style={{ height: 14, imageRendering: "pixelated" }} />
+          </Link>
+          <button className="btn btn-secondary btn-sm" onClick={logout}>
+            退出
+          </button>
+        </div>
       </div>
 
       {/* 创建赛季 */}

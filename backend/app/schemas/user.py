@@ -20,6 +20,13 @@ class UserLogin(BaseModel):
     password: str
 
 
+class PasswordChange(BaseModel):
+    """修改密码：当前密码 + 新密码。"""
+
+    old_password: str = Field(min_length=1)
+    new_password: str = Field(min_length=4, max_length=128)
+
+
 class Token(BaseModel):
     access_token: str
     token_type: str = "bearer"
