@@ -1,0 +1,57 @@
+# Render 一键部署蓝图（Blueprint）。
+# 在 Render 控制台 New → Blueprint，选中包含本文件的仓库即可创建：
+#   1) 一个 PostgreSQL 数据库
+#   2) 一个 Python 后端 Web 服务（FastAPI）
+#   3) 一个静态前端站点（Next.js 导出）
+# 服务间的地址与密钥已自动注入，无需手填。
+
+databases:
+  - name: loseweight-db
+    plan: free
+    databaseName: loseweight
+    user: loseweight
+
+services:
+  # ---------- 后端：FastAPI ----------
+  - type: web
+    name: loseweight-api
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.7
+      # 从数据库自动注入连接串
+      - key: DATABASE_URL
+        fromDatabase:
+          name: loseweight-db
+          property: connectionString
+      # 自动生成随机密钥用于 JWT 签名
+      - key: SECRET_KEY
+        generateValue: true
+      # 自动注入前端域名作为允许的跨域来源（config 会自动补 https://）
+      - key: CORS_ORIGINS
+        fromService:
+          name: loseweight-web
+          type: web
+          property: host
+
+  # ---------- 前端：Next.js 静态导出 ----------
+  - type: web
+    name: loseweight-web
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: out
+    envVars:
+      - key: NODE_VERSION
+        value: 20.11.1
+      # 自动注入后端域名（api.ts 会自动补 https://）
+      - key: NEXT_PUBLIC_API_BASE
+        fromService:
+          name: loseweight-api
+          type: web
+          property: host

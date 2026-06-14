@@ -1,0 +1,416 @@
+/* ===========================================================================
+   全局样式 —— 「旅行手账 / 复古游戏书」像素风主题
+   素材来源：01_TravelBookLite（精灵图在 /public/ui，字体在 /public/fonts）
+   设计要点：羊皮纸书页 + 暗红书封 + 金棕边框 + 像素图标；九宫格(border-image)拉伸。
+   =========================================================================== */
+
+/* 像素中文字体 Zpix（本地，离线可用） */
+@font-face {
+  font-family: "Zpix";
+  src: url("/fonts/Zpix.ttf") format("truetype");
+  font-display: swap;
+}
+
+:root {
+  /* —— 取自素材的精确调色板 —— */
+  --ink: #493333; /* 描边 & 正文 */
+  --parchment: #ffd7a8; /* 书页填充 */
+  --parchment-page: #f4d3a1; /* 整页底色（略深） */
+  --parchment-edge: #e5b67f;
+  --maroon: #45292a; /* 暗红面板 */
+  --maroon-edge: #634041;
+  --maroon-light: #825f60;
+  --stone: #c6b09b; /* 输入框石色 */
+  --stone-edge: #8a7868;
+  --stone-hi: #ffe3c6;
+  --gold: #e5b67f;
+  --gold-bright: #ffd071;
+  --red: #b75b5f; /* 书封红 */
+  --red-dark: #9c4351;
+  --star: #e1c432;
+  --energy: #3e89d4;
+  --heart: #d43e3e;
+  --coin: #d4a23e;
+
+  /* —— 兼容旧变量名（各页面 inline 样式仍在引用） —— */
+  --bg: #7e3742;
+  --card: var(--parchment);
+  --text: var(--ink);
+  --muted: #9b6b4e;
+  --border: var(--stone-edge);
+  --primary: #9c4351;
+  --primary-dark: #7a3340;
+  --accent: #3e89d4;
+  --danger: #c0392b;
+  --radius: 0;
+  --shadow: 3px 3px 0 rgba(73, 51, 51, 0.35);
+  --maxw: 460px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Zpix", "PingFang SC", "Microsoft YaHei", ui-monospace, monospace;
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: none; /* 像素字体不抗锯齿更清晰 */
+  image-rendering: pixelated;
+}
+
+/* 所有精灵图保持像素清晰 */
+img {
+  image-rendering: pixelated;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* 页面容器：一张羊皮纸书页，居中放在暗红「书桌」上 */
+.container {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 16px 16px 100px;
+  min-height: 100vh;
+  background: var(--parchment-page);
+  border-left: 4px solid var(--stone-edge);
+  border-right: 4px solid var(--stone-edge);
+}
+
+.page-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 8px 0 16px;
+  color: var(--ink);
+}
+
+.subtitle {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+/* —— 卡片：羊皮纸弹窗（九宫格） —— */
+.card {
+  border-style: solid;
+  border-width: 10px;
+  border-color: transparent;
+  border-image: url("/ui/Popup01a.png") 3 fill stretch;
+  image-rendering: pixelated;
+  padding: 14px;
+  margin-bottom: 14px;
+  color: var(--ink);
+}
+
+.card-title {
+  font-size: 14px;
+  font-weight: 700;
+  margin: 0 0 12px;
+  color: var(--ink);
+}
+
+/* —— 表单 —— */
+.field {
+  margin-bottom: 14px;
+}
+.field label {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+input,
+select,
+textarea {
+  width: 100%;
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--ink);
+  padding: 9px 10px;
+  border-style: solid;
+  border-width: 6px;
+  border-color: transparent;
+  border-image: url("/ui/Frame01a.png") 3 fill stretch;
+  image-rendering: pixelated;
+  background: transparent;
+  outline: none;
+}
+input::placeholder,
+textarea::placeholder {
+  color: #7e6a55;
+}
+/* 聚焦：边框换成金色高亮 */
+input:focus,
+select:focus,
+textarea:focus {
+  border-image: url("/ui/FrameSelect01a.png") 3 fill stretch;
+}
+textarea {
+  resize: vertical;
+  min-height: 64px;
+}
+select {
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.row {
+  display: flex;
+  gap: 10px;
+}
+.row > * {
+  flex: 1;
+}
+
+/* —— 按钮 —— */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 10px 16px;
+  cursor: pointer;
+  border-style: solid;
+  border-width: 8px;
+  border-color: transparent;
+  image-rendering: pixelated;
+  transition: transform 0.05s, filter 0.1s;
+}
+.btn:active {
+  transform: translateY(2px);
+  filter: brightness(0.94);
+}
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+/* 主按钮：暗红面板 + 米色字（呼应书封） */
+.btn-primary {
+  border-image: url("/ui/Slot01a.png") 3 fill stretch;
+  color: var(--parchment);
+  text-shadow: 1px 1px 0 #2c1819;
+}
+/* 次按钮：石色边框 */
+.btn-secondary {
+  border-image: url("/ui/Frame01a.png") 3 fill stretch;
+  color: var(--ink);
+}
+/* 幽灵按钮 */
+.btn-ghost {
+  border: none;
+  background: transparent;
+  color: var(--red-dark);
+  text-decoration: underline;
+}
+.btn-sm {
+  width: auto;
+  border-width: 6px;
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
+/* —— 提示条 —— */
+.error {
+  background: var(--red-dark);
+  color: #ffe7c2;
+  border: 3px solid var(--ink);
+  padding: 9px 12px;
+  font-size: 12px;
+  margin-bottom: 12px;
+}
+.success {
+  background: var(--gold);
+  color: #4a3a16;
+  border: 3px solid var(--ink);
+  padding: 9px 12px;
+  font-size: 12px;
+  margin-bottom: 12px;
+}
+
+/* —— 底部导航：暗红书脊 + 像素图标 —— */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  background: var(--maroon);
+  border-top: 4px solid var(--stone-edge);
+  max-width: var(--maxw);
+  margin: 0 auto;
+  z-index: 50;
+}
+.bottom-nav a {
+  flex: 1;
+  text-align: center;
+  padding: 9px 0 11px;
+  font-size: 11px;
+  color: #b89a86;
+}
+.bottom-nav a.active {
+  color: var(--gold-bright);
+}
+.bottom-nav .nav-icon {
+  display: block;
+  height: 22px;
+  margin: 0 auto 3px;
+  image-rendering: pixelated;
+  opacity: 0.65;
+}
+.bottom-nav a.active .nav-icon {
+  opacity: 1;
+  filter: drop-shadow(0 0 2px rgba(255, 208, 113, 0.9));
+}
+
+/* —— 统计小格：暗红 Slot + 金色数字 —— */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+.stat {
+  border-style: solid;
+  border-width: 9px;
+  border-color: transparent;
+  border-image: url("/ui/Slot01a.png") 3 fill stretch;
+  image-rendering: pixelated;
+  text-align: center;
+  color: var(--parchment);
+  padding: 6px 4px;
+}
+.stat .val {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--gold-bright);
+}
+.stat .lbl {
+  font-size: 11px;
+  color: var(--parchment-edge);
+  margin-top: 2px;
+}
+
+/* —— 中心提示 / 加载 —— */
+.center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  text-align: center;
+  gap: 12px;
+  color: var(--ink);
+}
+
+/* —— 徽章 —— */
+.badge {
+  display: inline-block;
+  padding: 2px 7px;
+  font-size: 11px;
+  font-weight: 700;
+  border: 2px solid var(--ink);
+  image-rendering: pixelated;
+}
+.badge-green {
+  background: #cda85f;
+  color: #3a2412;
+}
+.badge-gray {
+  background: var(--stone);
+  color: #5a4636;
+}
+.badge-gold {
+  background: var(--gold-bright);
+  color: #5a3a12;
+}
+
+/* —— 列表项：羊皮纸弹窗 —— */
+.list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-style: solid;
+  border-width: 10px;
+  border-color: transparent;
+  border-image: url("/ui/Popup01a.png") 3 fill stretch;
+  image-rendering: pixelated;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  color: var(--ink);
+}
+
+/* —— 头像/选择方格（不用九宫格，避免被 inline 边框破坏） —— */
+.avatar-circle {
+  width: 42px;
+  height: 42px;
+  border-radius: 0;
+  background: var(--stone-hi);
+  border: 2px solid var(--ink);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  image-rendering: pixelated;
+}
+
+/* —— 内联像素图标 —— */
+.icon {
+  image-rendering: pixelated;
+  vertical-align: middle;
+  height: 1em;
+}
+.icon-lg {
+  height: 22px;
+}
+
+/* —— 像素分隔线 —— */
+.tb-divider {
+  height: 4px;
+  margin: 12px 0;
+  background: url("/ui/Line01a.png") repeat-x center / auto 100%;
+  image-rendering: pixelated;
+}
+
+/* —— 进度条 —— */
+.tb-bar {
+  position: relative;
+  height: 12px;
+  border: 2px solid var(--ink);
+  background: var(--maroon);
+  image-rendering: pixelated;
+  overflow: hidden;
+}
+.tb-bar > .fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--gold-bright);
+}
+
+/* —— 工具类 —— */
+.muted {
+  color: var(--muted);
+}
+.text-center {
+  text-align: center;
+}
+.mt {
+  margin-top: 12px;
+}
+.mb {
+  margin-bottom: 12px;
+}
+.flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
