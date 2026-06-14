@@ -130,6 +130,8 @@ input,
 select,
 textarea {
   width: 100%;
+  min-width: 0; /* 允许在 flex 布局中收缩（修复 iOS 日期框撑破列宽/重叠） */
+  max-width: 100%;
   font-family: inherit;
   font-size: 14px;
   color: var(--ink);
@@ -141,6 +143,16 @@ textarea {
   image-rendering: pixelated;
   background: transparent;
   outline: none;
+}
+/* iOS Safari 的日期/时间输入框有很大的固有宽度，归一化外观使其遵守容器宽度 */
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"] {
+  -webkit-appearance: none;
+  appearance: none;
+}
+input[type="date"]::-webkit-date-and-time-value {
+  text-align: left;
 }
 input::placeholder,
 textarea::placeholder {
@@ -166,7 +178,8 @@ select {
   gap: 10px;
 }
 .row > * {
-  flex: 1;
+  flex: 1 1 0;
+  min-width: 0; /* 关键：允许 flex 子项收缩到内容宽度以下，避免并排日期框重叠 */
 }
 
 /* —— 按钮 —— */
