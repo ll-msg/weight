@@ -37,7 +37,7 @@ services:
         fromService:
           name: loseweight-web
           type: web
-          property: url
+          property: host
 
   # ---------- 前端：Next.js 静态导出 ----------
   - type: web
@@ -54,4 +54,4 @@ services:
         fromService:
           name: loseweight-api
           type: web
-          property: url
+          property: host
