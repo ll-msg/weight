@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import GameTitle from "@/components/GameTitle";
 import LangToggle from "@/components/LangToggle";
 import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
@@ -43,10 +44,8 @@ export default function LoginPage() {
         <LangToggle />
       </div>
 
-      <div className="text-center" style={{ margin: "28px 0 20px" }}>
-        <h1 className="page-title" style={{ margin: "12px 0 4px" }}>
-          {t("common.appName")}
-        </h1>
+      <div className="text-center" style={{ margin: "8px 0 20px" }}>
+        <GameTitle />
         <div className="subtitle">{t("login.subtitle")}</div>
       </div>
 

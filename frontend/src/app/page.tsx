@@ -5,6 +5,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
+import GameTitle from "@/components/GameTitle";
 import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
 
@@ -20,8 +21,7 @@ export default function Home() {
 
   return (
     <div className="center">
-      <div style={{ fontSize: 40 }}>⚖️</div>
-      <div className="page-title">{t("common.appName")}</div>
+      <GameTitle />
       <div className="muted">{t("common.entering")}</div>
     </div>
   );

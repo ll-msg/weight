@@ -92,6 +92,36 @@ a {
   color: var(--ink);
 }
 
+/* —— 游戏 logo 风格标题 banner（像素厚描边 + 金色渐变 + 立体投影） —— */
+.game-title {
+  text-align: center;
+  user-select: none;
+  line-height: 1;
+  padding: 6px 0 14px;
+}
+.game-title-line {
+  display: block;
+  font-family: "Zpix", "PingFang SC", "Microsoft YaHei", ui-monospace, monospace;
+  font-weight: 400;
+  font-size: clamp(34px, 13vw, 54px);
+  letter-spacing: 4px;
+  /* 明亮金色渐变填充（支持的浏览器） */
+  color: #ffd64a; /* 不支持渐变裁剪时的回退色 */
+  background: linear-gradient(180deg, #fff7e2 0%, #ffdf7a 55%, #ffc63f 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  /* 1px 细描边 + 暗红立体投影，保证金色笔画清晰可见 */
+  text-shadow:
+    -1px 0 0 #4a2326, 1px 0 0 #4a2326, 0 -1px 0 #4a2326, 0 1px 0 #4a2326,
+    -1px -1px 0 #4a2326, 1px -1px 0 #4a2326, -1px 1px 0 #4a2326, 1px 1px 0 #4a2326,
+    0 3px 0 #9a9a9a, 0 5px 0 #5a2a2f;
+  image-rendering: pixelated;
+}
+.game-title-line + .game-title-line {
+  margin-top: 8px;
+}
+
 .subtitle {
   color: var(--muted);
   font-size: 12px;

@@ -7,6 +7,8 @@ type Dict = Record<string, string>;
 // 中文文案（默认）
 const zh: Dict = {
   "common.appName": "减肥对抗赛",
+  "common.appNameLine1": "减肥",
+  "common.appNameLine2": "对抗赛",
   "common.loading": "加载中…",
   "common.entering": "正在进入…",
   "common.cancel": "取消",
@@ -228,7 +230,9 @@ const zh: Dict = {
 
 // 英文文案
 const en: Dict = {
-  "common.appName": "Weight-Loss Showdown",
+  "common.appName": "Weight Loss Showdown",
+  "common.appNameLine1": "Weight Loss",
+  "common.appNameLine2": "Showdown",
   "common.loading": "Loading…",
   "common.entering": "Entering…",
   "common.cancel": "Cancel",

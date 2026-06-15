@@ -136,7 +136,7 @@ function CompetitionInner() {
         {season?.name}
       </div>
       <h1 className="page-title" style={{ margin: "0 0 12px" }}>
-        ⚔️ {t("competition.title")}
+        {t("competition.title")}
       </h1>
 
       {result?.is_finished && (
