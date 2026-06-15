@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from app.core.i18n import get_lang, translate
 from app.database import get_db
 from app.deps import get_current_user
+from app.models.record import DailyRecord
 from app.models.season import Season, SeasonParticipant
 from app.models.user import User
 from app.schemas.season import SeasonCreate, SeasonOut
@@ -19,8 +20,13 @@ def _to_out(season: Season, today: date | None = None) -> SeasonOut:
     """把 Season ORM 转为带 is_finished 计算字段的输出模型。"""
     today = today or date.today()
     out = SeasonOut.model_validate(season)
-    out.is_finished = today > season.end_date
+    # 到期 或 双方同意提前结束 都视为已结束
+    out.is_finished = today > season.end_date or season.ended_early
     return out
+
+
+def _get_my_participant(season: Season, user_id: int) -> SeasonParticipant | None:
+    return next((p for p in season.participants if p.user_id == user_id), None)
 
 
 @router.post("", response_model=SeasonOut, status_code=201)
@@ -90,3 +96,77 @@ def get_season(
     if season is None:
         raise HTTPException(status_code=404, detail=translate("season_not_found", lang))
     return _to_out(season)
+
+
+@router.post("/{season_id}/end-request", response_model=SeasonOut)
+def request_end(
+    season_id: int,
+    db: Session = Depends(get_db),
+    current: User = Depends(get_current_user),
+    lang: str = Depends(get_lang),
+):
+    """申请提前结束赛季。当所有参与者都申请后，赛季立即结束并按当前进度结算。"""
+    season = db.get(Season, season_id)
+    if season is None:
+        raise HTTPException(status_code=404, detail=translate("season_not_found", lang))
+    me = _get_my_participant(season, current.id)
+    if me is None:
+        raise HTTPException(status_code=403, detail=translate("not_participant", lang))
+
+    # 已结束则直接返回当前状态
+    if not (season.ended_early or date.today() > season.end_date):
+        me.wants_end = True
+        db.flush()
+        # 双方（全体）都同意 → 提前结束：标记并把结束日设为今天
+        if season.participants and all(p.wants_end for p in season.participants):
+            season.ended_early = True
+            season.end_date = date.today()
+        db.commit()
+        db.refresh(season)
+    return _to_out(season)
+
+
+@router.post("/{season_id}/end-cancel", response_model=SeasonOut)
+def cancel_end(
+    season_id: int,
+    db: Session = Depends(get_db),
+    current: User = Depends(get_current_user),
+    lang: str = Depends(get_lang),
+):
+    """撤销自己的「提前结束」申请（赛季尚未结束时有效）。"""
+    season = db.get(Season, season_id)
+    if season is None:
+        raise HTTPException(status_code=404, detail=translate("season_not_found", lang))
+    me = _get_my_participant(season, current.id)
+    if me is None:
+        raise HTTPException(status_code=403, detail=translate("not_participant", lang))
+    if not season.ended_early:
+        me.wants_end = False
+        db.commit()
+        db.refresh(season)
+    return _to_out(season)
+
+
+@router.delete("/{season_id}", status_code=204)
+def delete_season(
+    season_id: int,
+    db: Session = Depends(get_db),
+    current: User = Depends(get_current_user),
+    lang: str = Depends(get_lang),
+):
+    """删除赛季（仅创建者或参与者可删）。会一并清除该赛季的所有每日记录与餐食。"""
+    season = db.get(Season, season_id)
+    if season is None:
+        raise HTTPException(status_code=404, detail=translate("season_not_found", lang))
+
+    allowed = season.created_by == current.id or any(
+        p.user_id == current.id for p in season.participants
+    )
+    if not allowed:
+        raise HTTPException(status_code=403, detail=translate("no_permission", lang))
+
+    # 先删每日记录（其餐食通过关系级联删除），再删赛季（参与者随 Season 关系级联删除）
+    for rec in db.query(DailyRecord).filter(DailyRecord.season_id == season_id).all():
+        db.delete(rec)
+    db.delete(season)
+    db.commit()

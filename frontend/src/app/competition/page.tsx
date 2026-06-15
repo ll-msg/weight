@@ -98,6 +98,10 @@ function CompetitionInner() {
       ]);
       setLeftRec(l);
       setRightRec(r);
+    } catch {
+      // 非参与者/网络错误：不崩溃
+      setLeftRec(null);
+      setRightRec(null);
     } finally {
       setLoading(false);
     }
@@ -134,6 +138,23 @@ function CompetitionInner() {
       <h1 className="page-title" style={{ margin: "0 0 12px" }}>
         ⚔️ {t("competition.title")}
       </h1>
+
+      {result?.is_finished && (
+        <div
+          className="mb"
+          style={{
+            background: "var(--stone)",
+            color: "var(--ink)",
+            border: "3px solid var(--ink)",
+            padding: "8px 12px",
+            fontSize: 13,
+            fontWeight: 700,
+            textAlign: "center",
+          }}
+        >
+          {t("ended.title")}
+        </div>
+      )}
 
       {/* 选手头像 */}
       <div className="card">

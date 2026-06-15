@@ -28,6 +28,8 @@ class ParticipantOut(BaseModel):
     id: int
     user_id: int
     baseline_weight_kg: float
+    # 该参与者是否已申请提前结束
+    wants_end: bool = False
     user: UserBrief | None = None
 
 
@@ -40,6 +42,8 @@ class SeasonOut(BaseModel):
     end_date: date
     duration_weeks: int
     created_by: int
+    # 是否经双方同意提前结束
+    ended_early: bool = False
     participants: list[ParticipantOut] = []
-    # 是否已结束（由后端依据当前日期计算）
+    # 是否已结束（到期 或 提前结束）
     is_finished: bool = False

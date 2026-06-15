@@ -2,6 +2,7 @@
 
 // 主界面：记录某赛季某天的体重、喝水、运动、睡眠、心情、备注、食谱。
 
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useState } from "react";
 
@@ -59,6 +60,11 @@ function DashboardInner() {
   // 加载指定日期的记录（用于回填）
   const loadDay = useCallback(async () => {
     if (!seasonId) return;
+    // 赛季已结束则不拉取记录（页面会显示已结束提示）
+    if (season?.is_finished) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     try {
       const rec = await api.getDay(seasonId, date);
@@ -77,10 +83,13 @@ function DashboardInner() {
       } else {
         setForm({ ...emptyForm });
       }
+    } catch {
+      // 例如非参与者(403)/网络错误：不崩溃，回退为空表单
+      setForm({ ...emptyForm });
     } finally {
       setLoading(false);
     }
-  }, [seasonId, date]);
+  }, [seasonId, date, season?.is_finished]);
 
   useEffect(() => {
     loadDay();
@@ -120,6 +129,30 @@ function DashboardInner() {
       <div className="container">
         <div className="center">
           <div>{t("dashboard.pickSeason")}</div>
+        </div>
+        <BottomNav />
+      </div>
+    );
+  }
+
+  // 赛季已结束：禁止记录，提示并引导去看总结
+  if (season?.is_finished) {
+    return (
+      <div className="container">
+        <div className="center">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/ui/IconStar01a.png" alt="" style={{ height: 32, imageRendering: "pixelated" }} />
+          <div className="page-title" style={{ margin: 0 }}>
+            {t("ended.title")}
+          </div>
+          <div className="muted">{t("ended.desc")}</div>
+          <Link
+            href={`/report?season=${seasonId}`}
+            className="btn btn-primary"
+            style={{ width: "auto" }}
+          >
+            {t("result.viewSummary")}
+          </Link>
         </div>
         <BottomNav />
       </div>

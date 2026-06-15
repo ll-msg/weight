@@ -2,7 +2,7 @@
 
 from datetime import date, datetime, timezone
 
-from sqlalchemy import Date, DateTime, Float, ForeignKey, Integer, String
+from sqlalchemy import Boolean, Date, DateTime, Float, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
@@ -25,6 +25,8 @@ class Season(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=lambda: datetime.now(timezone.utc)
     )
+    # 是否经双方同意「提前结束」。一旦为真，赛季即视为已结束并按当前进度结算。
+    ended_early: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
     # 参与者
     participants: Mapped[list["SeasonParticipant"]] = relationship(
@@ -42,6 +44,8 @@ class SeasonParticipant(Base):
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     # 赛季基数体重（公斤）—— 减重百分比相对此值计算
     baseline_weight_kg: Mapped[float] = mapped_column(Float, nullable=False)
+    # 是否已申请「提前结束」。当所有参与者都为真时，赛季提前结束。
+    wants_end: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
     season: Mapped["Season"] = relationship(back_populates="participants")
     # 关联用户（用于带出昵称等信息），不反向写入

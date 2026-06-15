@@ -49,9 +49,35 @@ def get_db():
         db.close()
 
 
+def _ensure_columns() -> None:
+    """轻量「迁移」：为已存在的旧表补充新增列（create_all 不会 ALTER 已有表）。
+
+    无 Alembic 的情况下，保证线上旧库（SQLite/PostgreSQL）也能拿到新列。
+    BOOLEAN DEFAULT FALSE 在 PostgreSQL 与较新 SQLite 上均可用。
+    """
+    from sqlalchemy import inspect, text
+
+    inspector = inspect(engine)
+    # 表 -> {列名: 建表 DDL 片段}
+    wanted: dict[str, dict[str, str]] = {
+        "seasons": {"ended_early": "BOOLEAN NOT NULL DEFAULT FALSE"},
+        "season_participants": {"wants_end": "BOOLEAN NOT NULL DEFAULT FALSE"},
+    }
+    existing_tables = set(inspector.get_table_names())
+    with engine.begin() as conn:
+        for table, cols in wanted.items():
+            if table not in existing_tables:
+                continue  # create_all 会负责新表
+            have = {c["name"] for c in inspector.get_columns(table)}
+            for col, ddl in cols.items():
+                if col not in have:
+                    conn.execute(text(f"ALTER TABLE {table} ADD COLUMN {col} {ddl}"))
+
+
 def init_db() -> None:
-    """创建所有表（若不存在）。在应用启动时调用。"""
+    """创建所有表（若不存在）+ 补充新增列。在应用启动时调用。"""
     # 导入模型以确保它们已注册到 Base.metadata
     from app import models  # noqa: F401
 
     Base.metadata.create_all(bind=engine)
+    _ensure_columns()

@@ -61,7 +61,7 @@ def get_competition_result(
     return CompetitionResult(
         season_id=season.id,
         season_name=season.name,
-        is_finished=today > season.end_date,
+        is_finished=today > season.end_date or season.ended_early,
         scores=scores,
         winner_user_id=winner_id,
         is_tie=is_tie,

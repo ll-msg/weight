@@ -50,6 +50,7 @@ export interface Participant {
   id: number;
   user_id: number;
   baseline_weight_kg: number;
+  wants_end: boolean;
   user: UserBrief | null;
 }
 
@@ -60,6 +61,7 @@ export interface Season {
   end_date: string;
   duration_weeks: number;
   created_by: number;
+  ended_early: boolean;
   participants: Participant[];
   is_finished: boolean;
 }

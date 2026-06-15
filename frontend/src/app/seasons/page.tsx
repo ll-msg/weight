@@ -9,11 +9,15 @@ import { Suspense, useEffect, useState } from "react";
 import Avatar from "@/components/Avatar";
 import BottomNav from "@/components/BottomNav";
 import RequireAuth from "@/components/RequireAuth";
+import ResultModal from "@/components/ResultModal";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
-import type { Season, UserBrief } from "@/lib/types";
+import type { CompetitionResult, Season, UserBrief } from "@/lib/types";
 import { todayStr } from "@/lib/utils";
+
+// 该赛季的结算弹窗是否已看过（每个赛季只自动弹一次）
+const seenKey = (id: number) => `lw_seen_result_${id}`;
 
 function SeasonsInner() {
   const { user, logout } = useAuth();
@@ -24,6 +28,7 @@ function SeasonsInner() {
   const [users, setUsers] = useState<UserBrief[]>([]);
   const [showCreate, setShowCreate] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [resultModal, setResultModal] = useState<CompetitionResult | null>(null);
 
   // 创建表单状态
   const [name, setName] = useState("");
@@ -41,9 +46,38 @@ function SeasonsInner() {
       const [s, u] = await Promise.all([api.listSeasons(), api.listUsers()]);
       setSeasons(s);
       setUsers(u.filter((x) => x.id !== user?.id)); // 候选对手（排除自己）
+
+      // 赛季刚结束且尚未看过结算 → 弹出胜负战报特效
+      const justEnded = s.find(
+        (se) =>
+          se.is_finished &&
+          se.participants.some((p) => p.user_id === user?.id) &&
+          !localStorage.getItem(seenKey(se.id)),
+      );
+      if (justEnded) {
+        try {
+          setResultModal(await api.getCompetition(justEnded.id));
+        } catch {
+          /* 忽略 */
+        }
+      }
+    } catch {
+      /* 列表拉取失败：不崩溃，保持空列表 */
     } finally {
       setLoading(false);
     }
+  }
+
+  // 关闭结算弹窗（标记已看过）
+  function dismissResult() {
+    if (resultModal) localStorage.setItem(seenKey(resultModal.season_id), "1");
+    setResultModal(null);
+  }
+  // 查看总结 → 跳到战报/总结页
+  function viewSummary() {
+    if (!resultModal) return;
+    localStorage.setItem(seenKey(resultModal.season_id), "1");
+    router.push(`/report?season=${resultModal.season_id}`);
   }
 
   useEffect(() => {
@@ -57,6 +91,30 @@ function SeasonsInner() {
     const opp = users.find((u) => u.id === opponentId);
     if (opp?.profile) setOpponentBaseline(opp.profile.starting_weight_kg);
   }, [opponentId, users]);
+
+  // 申请/同意/撤销「提前结束」——需双方都同意才真正结束
+  async function onEndAction(e: React.MouseEvent, s: Season) {
+    e.preventDefault(); // 阻止 Link 跳转
+    e.stopPropagation();
+    const me = s.participants.find((p) => p.user_id === user?.id);
+    const opp = s.participants.find((p) => p.user_id !== user?.id);
+    try {
+      let updated: Season;
+      if (me?.wants_end) {
+        // 我已申请 → 点击撤销
+        if (!window.confirm(t("seasons.confirmCancelEnd", { name: s.name }))) return;
+        updated = await api.cancelEndSeason(s.id);
+      } else {
+        // 对方已申请 → 同意；否则 → 发起申请
+        const key = opp?.wants_end ? "seasons.confirmAgree" : "seasons.confirmEnd";
+        if (!window.confirm(t(key, { name: s.name }))) return;
+        updated = await api.requestEndSeason(s.id);
+      }
+      setSeasons((list) => list.map((x) => (x.id === s.id ? updated : x)));
+    } catch (err) {
+      window.alert(err instanceof Error ? err.message : t("seasons.endFail"));
+    }
+  }
 
   async function onCreate(e: React.FormEvent) {
     e.preventDefault();
@@ -210,7 +268,11 @@ function SeasonsInner() {
         <p className="muted">{t("seasons.empty")}</p>
       ) : (
         seasons.map((s) => (
-          <Link key={s.id} href={`/dashboard?season=${s.id}`} className="list-item">
+          <Link
+            key={s.id}
+            href={`${s.is_finished ? "/report" : "/dashboard"}?season=${s.id}`}
+            className="list-item"
+          >
             <div>
               <div style={{ fontWeight: 600 }}>{s.name}</div>
               <div className="muted" style={{ fontSize: 12 }}>
@@ -228,11 +290,46 @@ function SeasonsInner() {
                 ))}
               </div>
             </div>
-            <span className={`badge ${s.is_finished ? "badge-gray" : "badge-green"}`}>
-              {s.is_finished ? t("seasons.finished") : t("seasons.ongoing")}
-            </span>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8 }}>
+              <span className={`badge ${s.is_finished ? "badge-gray" : "badge-green"}`}>
+                {s.is_finished ? t("seasons.finished") : t("seasons.ongoing")}
+              </span>
+              {s.is_finished ? (
+                <span style={{ color: "var(--red-dark)", fontWeight: 700, fontSize: 13 }}>
+                  {t("seasons.summary")} ›
+                </span>
+              ) : (
+                (() => {
+                  const me = s.participants.find((p) => p.user_id === user?.id);
+                  const opp = s.participants.find((p) => p.user_id !== user?.id);
+                  const label = me?.wants_end
+                    ? t("seasons.waitingOther")
+                    : opp?.wants_end
+                      ? t("seasons.agreeEnd")
+                      : t("seasons.end");
+                  return (
+                    <button
+                      type="button"
+                      className="btn btn-danger btn-sm"
+                      onClick={(e) => onEndAction(e, s)}
+                    >
+                      {label}
+                    </button>
+                  );
+                })()
+              )}
+            </div>
           </Link>
         ))
+      )}
+
+      {resultModal && user && (
+        <ResultModal
+          result={resultModal}
+          currentUserId={user.id}
+          onClose={dismissResult}
+          onViewSummary={viewSummary}
+        />
       )}
 
       <BottomNav />

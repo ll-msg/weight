@@ -232,6 +232,13 @@ select {
   padding: 6px 10px;
   font-size: 12px;
 }
+/* 危险按钮：红底米色字（提前结束赛季） */
+.btn-danger {
+  border-image: none;
+  border: 3px solid var(--ink);
+  background: var(--red-dark);
+  color: #ffe7c2;
+}
 
 /* —— 提示条 —— */
 .error {
@@ -311,6 +318,62 @@ select {
   font-size: 11px;
   color: var(--parchment-edge);
   margin-top: 2px;
+}
+
+/* —— 赛季结算弹窗 —— */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(40, 20, 22, 0.62);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 100;
+}
+.modal-card {
+  max-width: 360px;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+}
+.result-banner {
+  font-size: 28px;
+  font-weight: 800;
+  margin: 6px 0;
+}
+.result-banner.win {
+  color: var(--gold-bright);
+  text-shadow: 2px 2px 0 #7a3340;
+}
+.result-banner.lose {
+  color: var(--red-dark);
+}
+.result-banner.tie {
+  color: var(--ink);
+}
+/* 像素星星掉落特效 */
+.confetti {
+  position: absolute;
+  top: -16px;
+  image-rendering: pixelated;
+  animation: tb-fall linear infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+@keyframes tb-fall {
+  0% {
+    transform: translateY(-16px) rotate(0deg);
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(360px) rotate(360deg);
+    opacity: 0;
+  }
 }
 
 /* —— 中心提示 / 加载 —— */

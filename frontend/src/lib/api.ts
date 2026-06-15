@@ -93,6 +93,12 @@ export const api = {
   // ---- 赛季 ----
   listSeasons: () => request<Season[]>("/api/seasons"),
   getSeason: (id: number) => request<Season>(`/api/seasons/${id}`),
+  deleteSeason: (id: number) => request<void>(`/api/seasons/${id}`, { method: "DELETE" }),
+  // 申请 / 撤销「提前结束」（双方都申请后赛季立即结束）
+  requestEndSeason: (id: number) =>
+    request<Season>(`/api/seasons/${id}/end-request`, { method: "POST" }),
+  cancelEndSeason: (id: number) =>
+    request<Season>(`/api/seasons/${id}/end-cancel`, { method: "POST" }),
   createSeason: (data: {
     name: string;
     start_date: string;

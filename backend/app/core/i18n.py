@@ -22,6 +22,10 @@ MESSAGES: dict[str, dict[str, str]] = {
         "en": "You are not a participant in this season",
     },
     "user_id_not_found": {"zh": "用户 {id} 不存在", "en": "User {id} not found"},
+    "no_permission": {
+        "zh": "无权删除该赛季",
+        "en": "You don't have permission to delete this season",
+    },
 }
 
 
